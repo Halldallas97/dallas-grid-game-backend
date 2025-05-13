@@ -36,8 +36,6 @@ public class Controller {
     }
 
     @GetMapping("/saved-board")
-    //todo there may be an issue here which is causing the gameboard to not render when it is called from the frontend.
-    //definitely here.. this needs to return an object.
     public ResponseEntity<Games> getGame() {
         Date today = new Date(System.currentTimeMillis());
         Optional<Game> gameOpt = repo.findByCreatedDate(today);
