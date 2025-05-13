@@ -1,6 +1,7 @@
 package com.dallas.dallas_grid_game_backend.controller;
 
 import com.dallas.dallas_grid_game_backend.entity.Game;
+import com.dallas.dallas_grid_game_backend.pojo.Games;
 import com.dallas.dallas_grid_game_backend.pojo.GridSpaces;
 import com.dallas.dallas_grid_game_backend.repo.Repo;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,30 +37,15 @@ public class Controller {
 
     @GetMapping("/saved-board")
     //todo there may be an issue here which is causing the gameboard to not render when it is called from the frontend.
-    public ResponseEntity<List<List<GridSpaces>>> getGame() {
+    //definitely here.. this needs to return an object.
+    public ResponseEntity<Games> getGame() {
         Date today = new Date(System.currentTimeMillis());
-        Optional<Game> optionalGame = repo.findByCreatedDate(today);
-        if (optionalGame.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        List<GridSpaces> flatGrid = optionalGame.get().getGridList();
-        int maxRow = flatGrid.stream().mapToInt(GridSpaces::getRow).max().orElse(0);
-        int maxCol = flatGrid.stream().mapToInt(GridSpaces::getCol).max().orElse(0);
-
-        List<List<GridSpaces>> grid = new ArrayList<>();
-        for (int i = 0; i <= maxRow; i++) {
-            grid.add(new ArrayList<>());
-            for (int j = 0; j <= maxCol; j++) {
-                grid.get(i).add(null);
-            }
-        }
-
-        for (GridSpaces space : flatGrid) {
-            grid.get(space.getRow()).set(space.getCol(), space);
-        }
-
-        return ResponseEntity.ok(grid);
+        Optional<Game> gameOpt = repo.findByCreatedDate(today);
+        return gameOpt.map(game -> ResponseEntity.ok(Games.builder()
+                .games(game)
+                .build())).orElseGet(() -> ResponseEntity.notFound().build());
     }
+
 
     @PostMapping("/create")
     public void createGame(@RequestBody List<List<GridSpaces>> grid) throws JsonProcessingException {
